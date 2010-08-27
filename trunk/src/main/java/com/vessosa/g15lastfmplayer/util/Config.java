@@ -25,13 +25,12 @@ public class Config {
 			e.printStackTrace();
 		}
 
-		System.out.println(getResource("g15lastfm.properties").getFile());
+		// System.out.println(getResource("g15lastfm.properties").getFile());
 		if (getValue(USER) == null || getValue(USER).length() == 0) {
 			SwingUtilities.invokeLater(new Runnable() {
 
 				@Override
 				public void run() {
-					System.out.println("showing");
 					JXLoginPane loginPanel = new JXLoginPane(new LoginService() {
 
 						@Override
@@ -50,7 +49,6 @@ public class Config {
 							e.printStackTrace();
 						}
 					}
-					// properties.setProperty("a.b", "new value");
 				}
 
 			});
