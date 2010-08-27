@@ -10,6 +10,7 @@ import org.pushingpixels.substance.api.skin.TwilightSkin;
 import com.melloware.jintellitype.JIntellitype;
 import com.vessosa.g15lastfmplayer.controller.Controller;
 import com.vessosa.g15lastfmplayer.model.MainModel;
+import com.vessosa.g15lastfmplayer.util.Config;
 import com.vessosa.g15lastfmplayer.util.InstanceChecker;
 import com.vessosa.g15lastfmplayer.view.G15KeysImplementationView;
 import com.vessosa.g15lastfmplayer.view.LCDScreen;
@@ -36,6 +37,7 @@ public class G15LastfmPlayer {
 			}
 
 		});
+		Config.initConfig();
 		Controller controller = new Controller();
 		controller.addModel(new MainModel());
 

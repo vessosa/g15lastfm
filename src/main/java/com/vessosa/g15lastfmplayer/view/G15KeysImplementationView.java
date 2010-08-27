@@ -5,6 +5,8 @@ import java.awt.KeyboardFocusManager;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 
+import javax.swing.JOptionPane;
+
 import net.djpowell.lcdjni.KeyCallback;
 
 import org.apache.log4j.Logger;
@@ -107,7 +109,8 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Loving..");
 			controller.love();
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -116,7 +119,8 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Banning..");
 			controller.ban();
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -125,7 +129,8 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("skip to next track..");
 			controller.skip();
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
@@ -134,7 +139,8 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Playing..");
 			controller.play();
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
+					JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
