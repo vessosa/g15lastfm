@@ -1,14 +1,72 @@
 package com.vessosa.g15lastfmplayer.util;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Properties;
+
+import javax.swing.SwingUtilities;
+
+import org.jdesktop.swingx.JXLoginPane;
+import org.jdesktop.swingx.auth.LoginService;
+
 public class Config {
-	public static final String USER = "user";
+	private static Properties properties = new Properties();
+	public static final String USER = "username";
 	public static final String PASSWORD = "password";
 
+	public static void initConfig() {
+		try {
+			properties.load(getResource("g15lastfm.properties").openStream());
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println(getResource("g15lastfm.properties").getFile());
+		if (getValue(USER) == null || getValue(USER).length() == 0) {
+			SwingUtilities.invokeLater(new Runnable() {
+
+				@Override
+				public void run() {
+					System.out.println("showing");
+					JXLoginPane loginPanel = new JXLoginPane(new LoginService() {
+
+						@Override
+						public boolean authenticate(String arg0, char[] arg1, String arg2) throws Exception {
+							return true;
+						}
+					});
+					loginPanel.setBannerText("Last.fm login");
+					if (JXLoginPane.showLoginDialog(null, loginPanel) == JXLoginPane.Status.SUCCEEDED) {
+						properties.setProperty(USER, loginPanel.getUserName());
+						properties.setProperty(PASSWORD, String.valueOf(loginPanel.getPassword()));
+						// Write properties file.
+						try {
+							properties.store(new FileOutputStream(getResource("g15lastfm.properties").getPath()), null);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+					// properties.setProperty("a.b", "new value");
+				}
+
+			});
+
+		}
+	}
+
 	public static String getValue(String value) {
-		if (value.equals(USER))
-			return "vessosa";
-		if (value.equals(PASSWORD))
-			return "12345";
-		return null;
+		return properties.getProperty(value);
+	}
+
+	public static URL getResource(final String fileName) {
+		URL url = ClassLoader.getSystemResource("resources/" + fileName);
+		if (url == null) {
+			url = ClassLoader.getSystemResource(fileName);
+		}
+		return url;
 	}
 }

@@ -114,7 +114,7 @@ public class MainModel extends DefaultModel {
 		}
 	}
 
-	public void processBan() {
+	public void processBan() throws Exception {
 		if (isPlaying && currentTrack != null) {
 			Session session = login(Config.getValue(Config.USER), Config.getValue(Config.PASSWORD));
 			Result result = Track.ban(currentTrack.getArtist(), currentTrack.getName(), session);
@@ -128,7 +128,7 @@ public class MainModel extends DefaultModel {
 		}
 	}
 
-	public void processLove() {
+	public void processLove() throws Exception {
 		if (isPlaying && currentTrack != null) {
 			Session session = login(Config.getValue(Config.USER), Config.getValue(Config.PASSWORD));
 			Result result = Track.love(currentTrack.getArtist(), currentTrack.getName(), session);
@@ -279,7 +279,12 @@ public class MainModel extends DefaultModel {
 	public void callSoftButton1() {
 	}
 
-	private Session login(String user, String password) {
+	public void callSearch() {
+		firePropertyChange(Controller.SHOW_SEARCH_DIALOG, false, true);
+		setShowStatuswMessage("Search", 14);
+	}
+
+	private Session login(String user, String password) throws Exception {
 		// Authenticate user
 		if (session == null) {
 			String apiKey = "90120304ba34b682c26aec08425d80e4";
@@ -287,11 +292,15 @@ public class MainModel extends DefaultModel {
 			try {
 				LOGGER.debug("Authenticating...");
 				session = Authenticator.getMobileSession(user, password, apiKey, apiSig);
+
 			} catch (Exception e) {
 				if (e instanceof UnknownHostException) {
 					showErrorMessage("Last.fm seens to be down, please try again later.");
 				}
 			}
+		}
+		if (session == null) {
+			throw new Exception("Could not login on Last.fm, may be wrong password?");
 		}
 		return session;
 	}
