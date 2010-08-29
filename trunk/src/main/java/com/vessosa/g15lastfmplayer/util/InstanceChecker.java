@@ -9,7 +9,7 @@ import java.nio.channels.FileLock;
 import org.apache.log4j.Logger;
 
 public class InstanceChecker {
-	
+
 	private static final Logger LOGGER = Logger.getLogger(InstanceChecker.class);
 	private static File f;
 	private static FileChannel channel;
@@ -23,7 +23,7 @@ public class InstanceChecker {
 				// if exist try to delete it
 				f.delete();
 			}
-			
+
 			// Try to get the lock
 			channel = new RandomAccessFile(f, "rw").getChannel();
 			lock = channel.tryLock();
@@ -32,7 +32,7 @@ public class InstanceChecker {
 				channel.close();
 				throw new RuntimeException("G15LastfmPlayer already running");
 			}
-			
+
 			// Add shutdown hook to release lock when application shutdown
 			ShutdownHook shutdownHook = new ShutdownHook();
 			Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -53,7 +53,7 @@ public class InstanceChecker {
 				f.delete();
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.debug(e);
 		}
 	}
 

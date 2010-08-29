@@ -3,7 +3,10 @@ package com.vessosa.g15lastfmplayer.util;
 import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 
+import org.apache.log4j.Logger;
+
 public class ThreadUtils {
+	private static final Logger LOGGER = Logger.getLogger(ThreadUtils.class);
 
 	/**
 	 * if the current thread is not the EDT call SwingUtilities.invokLater
@@ -33,9 +36,9 @@ public class ThreadUtils {
 			try {
 				EventQueue.invokeAndWait(doRun);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			} catch (InvocationTargetException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 		}
 	}

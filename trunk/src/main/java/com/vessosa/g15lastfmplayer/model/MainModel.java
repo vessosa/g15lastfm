@@ -1,14 +1,23 @@
 package com.vessosa.g15lastfmplayer.model;
 
+import java.awt.Desktop;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.AudioDevice;
@@ -28,9 +37,11 @@ import net.roarsoftware.xml.DomElement;
 
 import org.apache.log4j.Logger;
 
+import com.vessosa.g15lastfmplayer.G15LastfmPlayer;
 import com.vessosa.g15lastfmplayer.controller.Controller;
 import com.vessosa.g15lastfmplayer.util.Config;
 import com.vessosa.g15lastfmplayer.util.ELCDScreen;
+import com.vessosa.g15lastfmplayer.util.MSNSendPlayingInfo;
 import com.vessosa.g15lastfmplayer.util.mvc.DefaultModel;
 
 public class MainModel extends DefaultModel {
@@ -39,18 +50,14 @@ public class MainModel extends DefaultModel {
 	private boolean continuePlaying = false;
 	private Session session;
 	private Player player;
-	private Radio radio;
-	private Playlist playlist;
-	private ArrayList<Track> tracks;
 	private Thread playThread;
 	private Thread progressThread;
 	private Track currentTrack;
 	private long startPlaybackTime;
 	private Scrobbler scrobbler;
 	private boolean hasSkipped = false;
-	private List<String> recentRadios;
-	private String currentMusicName;
 	private Radio currentRadio;
+	private MSNSendPlayingInfo sendMsnInfo;
 
 	public MainModel() {
 	}
@@ -73,7 +80,7 @@ public class MainModel extends DefaultModel {
 					else
 						firePropertyChange(Controller.SHOW_MUSIC_PROGRESS, null, false);
 				} catch (InterruptedException e) {
-					e.printStackTrace();
+					LOGGER.debug(e);
 				}
 
 			}
@@ -151,7 +158,22 @@ public class MainModel extends DefaultModel {
 			}
 		}
 		setMusicName("Stopped");
-		setShowStatuswMessage(currentRadio.getStationName(), 20);
+		getSendMsnInfo().sendPlayingInfo("", "", "", false);
+		setShowStatuswMessage("Stopped", 20);
+	}
+
+	private String getPreparedStationName(Radio radio) {
+		// necessary to convert accent chars to normal char due not compatible
+		// with internal font
+		String preparedRadio = "No station";
+		if (radio != null) {
+			preparedRadio = radio.getStationName().toLowerCase().replaceAll("[·‡‰‚„]", "a");
+			preparedRadio = preparedRadio.toLowerCase().replaceAll("[ÈËÎÍ]", "e");
+			preparedRadio = preparedRadio.toLowerCase().replaceAll("[ÌÏÔÓ]", "i");
+			preparedRadio = preparedRadio.toLowerCase().replaceAll("[ÛÚˆÙı]", "o");
+			preparedRadio = preparedRadio.toLowerCase().replaceAll("[˙˘ˆ˚]", "u");
+		}
+		return preparedRadio;
 	}
 
 	public void processSkip() {
@@ -201,7 +223,7 @@ public class MainModel extends DefaultModel {
 		} catch (IOException e) {
 			processStop();
 			firePropertyChange(Controller.MUSIC_NAME, null, "ERROR - STOPPED");
-			e.printStackTrace();
+			LOGGER.debug(e);
 		} catch (Exception e) {
 			processStop();
 			LOGGER.debug("Exception: " + e.getCause());
@@ -300,6 +322,7 @@ public class MainModel extends DefaultModel {
 			}
 		}
 		if (session == null) {
+			LOGGER.debug("Could not login on Last.fm, may be wrong password?");
 			throw new Exception("Could not login on Last.fm, may be wrong password?");
 		}
 		return session;
@@ -317,7 +340,7 @@ public class MainModel extends DefaultModel {
 		if (radio == null) {
 			throw new Exception("Nothing found with this radio name: " + radioName);
 		} else {
-			LOGGER.debug("Radio tunned: " + radio.getStationName());
+			LOGGER.debug("Radio tunned: " + getPreparedStationName(radio));
 		}
 		return radio;
 	}
@@ -354,7 +377,7 @@ public class MainModel extends DefaultModel {
 
 	private void keepPlaying(final Radio radio, final Session session) {
 		prepareProgressThread();
-		setShowStatuswMessage(radio.getStationName(), 20);
+		setShowStatuswMessage(getPreparedStationName(radio), 20);
 		playThread = new Thread() {
 
 			@Override
@@ -366,10 +389,10 @@ public class MainModel extends DefaultModel {
 						tracks = getPlayListTracks(radio);
 						LOGGER.debug("Retrieved " + tracks.size() + " tracks");
 					}
-					setShowStatuswMessage(radio.getStationName(), 20);
+					setShowStatuswMessage(getPreparedStationName(radio), 20);
 					startPlaybackTime = System.currentTimeMillis() / 1000;
 					currentTrack = tracks.get(0);
-					nowPlaying(session, currentTrack.getArtist(), currentTrack.getName());
+					nowPlaying(session, currentTrack);
 					firePropertyChange(Controller.WORKING, null, false);
 					playStreaming(currentTrack.getLocation());
 					if (!hasSkipped)
@@ -387,16 +410,18 @@ public class MainModel extends DefaultModel {
 		playThread.start();
 	}
 
-	private void nowPlaying(final Session session, final String artist, final String name) {
+	private void nowPlaying(final Session session, Track track) {
 		new Thread() {
 
 			@Override
 			public void run() {
 				try {
-					setMusicName(artist + " - " + name);
+					getSendMsnInfo().sendPlayingInfo(currentTrack.getArtist(), currentTrack.getName(),
+							currentTrack.getAlbum(), true);
+					setMusicName(currentTrack.getArtist() + " - " + currentTrack.getName());
 					Scrobbler scrobbler = getScrobbler(session);
 					if (scrobbler != null) {
-						ResponseStatus status = scrobbler.nowPlaying(artist, name);
+						ResponseStatus status = scrobbler.nowPlaying(currentTrack.getArtist(), currentTrack.getName());
 						LOGGER.debug("Submit OK: " + status.ok());
 					} else {
 						LOGGER.error("Can't scrobble now");
@@ -423,5 +448,75 @@ public class MainModel extends DefaultModel {
 			progressThread.setName("progressThread");
 			progressThread.start();
 		}
+	}
+
+	public MSNSendPlayingInfo getSendMsnInfo() {
+		if (sendMsnInfo == null) {
+			sendMsnInfo = new MSNSendPlayingInfo();
+		}
+		return sendMsnInfo;
+	}
+
+	public void callUpdate() {
+		LOGGER.debug("Checking for Updates");
+		new Thread() {
+
+			@Override
+			public void run() {
+				String lastVersion = null;
+				try {
+					URL projectSite = new URL("http://code.google.com/p/g15lastfm/");
+					URLConnection urlC = projectSite.openConnection();
+					BufferedReader in = new BufferedReader(new InputStreamReader(urlC.getInputStream()));
+					String inputLine;
+					while ((inputLine = in.readLine()) != null) {
+						if (inputLine.contains("<strong>Current version:")) {
+							lastVersion = inputLine;
+							break;
+						}
+					}
+					in.close();
+
+					if (lastVersion != null && lastVersion.length() > 0) {
+						lastVersion = lastVersion.substring(lastVersion.indexOf("Current version:") + 16);
+						lastVersion = lastVersion.substring(0, lastVersion.indexOf("</strong>")).trim();
+						LOGGER.debug("last Version=" + lastVersion);
+					}
+					if (!lastVersion.equals(G15LastfmPlayer.getVersion()))
+						LOGGER.debug("Not necessary to update");
+					else {
+						LOGGER.debug("New update found!");
+						SwingUtilities.invokeLater(new Runnable() {
+
+							@Override
+							public void run() {
+								if (JOptionPane.showConfirmDialog(null,
+										"New version of G15Lastfm is available to download!",
+										"New Update for G15Lastfm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+									LOGGER.debug("User choose to update, opening browser.");
+									Desktop desktop = Desktop.getDesktop();
+									try {
+										desktop.browse(new URI("http://code.google.com/p/g15lastfm/"));
+									} catch (IOException e) {
+										LOGGER.debug(e);
+									} catch (URISyntaxException e) {
+										LOGGER.debug(e);
+									}
+								} else {
+									LOGGER.debug("User choose to not update.");
+								}
+							}
+
+						});
+
+					}
+
+				} catch (Exception e) {
+					LOGGER.debug(e);
+				}
+
+			}
+
+		}.start();
 	}
 }
