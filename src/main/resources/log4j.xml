@@ -10,7 +10,7 @@
 	<!-- A time/date based rolling appender -->
 
 	<appender name="FILE" class="org.apache.log4j.FileAppender">
-		<param name="File" value="g15lastfmplayer.log" />
+		<param name="File" value="log/g15lastfmplayer.log" />
 		<param name="Append" value="true" />
 
 		<layout class="org.apache.log4j.PatternLayout">
@@ -43,14 +43,10 @@
 	<!-- ================ -->
 
 	<!-- Limit the org.apache category to INFO as its DEBUG is verbose -->
-	<category name="com.vessosa.g15lastfmplayer">
+	<category name="com.vessosa">
 		<priority value="TRACE" />
 	</category>
 
-	<!-- Limit org.jgroups category to INFO -->
-	<category name="org.jgroups">
-		<priority value="INFO" />
-	</category>
 
 
 	<!-- ======================= -->
@@ -59,7 +55,7 @@
 
 	<root>
 		<appender-ref ref="CONSOLE" />
-<!--		<appender-ref ref="FILE" />-->
+		<appender-ref ref="FILE" />
 	</root>
 
 </log4j:configuration>
