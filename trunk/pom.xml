@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.vessosa</groupId>
-	<artifactId>com.vessosa.g15lastfm</artifactId>
+	<artifactId>g15lastfm</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>G15Lastfm</name>
 	<description>A Last.fm player for G15 keyboard</description>
@@ -11,7 +11,7 @@
 			<resource>
 				<directory>src/main/resources</directory>
 				<filtering>true</filtering>
-				<targetPath>resources</targetPath>
+				<!-- <targetPath>resources</targetPath> -->
 			</resource>
 			<resource>
 				<directory>version</directory>
@@ -26,36 +26,73 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
-			<!-- <plugin> -->
-			<!-- <groupId>org.bluestemsoftware.open.maven.plugin</groupId> -->
-			<!-- <artifactId>launch4j-plugin</artifactId> -->
-			<!-- <version>1.0.0.0</version> -->
-			<!-- <executions> -->
-			<!-- <execution> -->
-			<!-- <id>launch4j</id> -->
-			<!-- <phase>verify</phase> -->
-			<!-- <goals> -->
-			<!-- <goal>launch4j</goal> -->
-			<!-- </goals> -->
-			<!-- <configuration> -->
-			<!-- <dontWrapJar>false</dontWrapJar> -->
-			<!-- <headerType>gui</headerType> -->
-			<!-- <outfile>target/alakai-standalone-assembly-${project.version}-install.exe</outfile> -->
-			<!-- <jar>target/alakai-standalone-assembly-${project.version}-install.jar</jar> -->
-			<!-- <errTitle>alakai</errTitle> -->
-			<!-- <jre> -->
-			<!-- <minVersion>1.6.0</minVersion> -->
-			<!-- </jre> -->
-			<!-- <splash> -->
-			<!-- <file>${basedir}/src/main/resources/lastfm.bmp</file> -->
-			<!-- <waitForWindow>true</waitForWindow> -->
-			<!-- <timeout>60</timeout> -->
-			<!-- <timeoutErr>false</timeoutErr> -->
-			<!-- </splash> -->
-			<!-- </configuration> -->
-			<!-- </execution> -->
-			<!-- </executions> -->
-			<!-- </plugin> -->
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<excludes>
+						<exclude>**/resources/*</exclude>
+						 <exclude>*.eap</exclude> 
+						 <exclude>*.ldb</exclude> 
+						 <exclude>mainori.bmp</exclude> 
+						 <exclude>main.bmp</exclude> 
+						 <exclude>lcdjni-c.dll</exclude> 
+						 <exclude>JIntellitype.dll</exclude> 
+						 <exclude>g15lastfm.properties</exclude> 
+						 <exclude>start.bat</exclude>
+					</excludes>
+					<outputDirectory>build/current</outputDirectory>
+					<archive>
+						<manifestEntries>
+							<Class-Path> . config/ </Class-Path>
+						</manifestEntries>
+						<manifest>
+							<mainClass>com.vessosa.g15lastfmplayer.G15LastfmPlayer</mainClass>
+							<addClasspath>true</addClasspath>
+							<packageName>com.vessosa.g15lastfmplayer</packageName>
+							<classpathPrefix>lib</classpathPrefix>
+							<addExtensions>false</addExtensions>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.2-beta-5</version>
+				<configuration>
+					<descriptors>
+						<descriptor>assembly.xml</descriptor>
+					</descriptors>
+					<executions>
+						<execution>
+							<id>make-assembly</id>
+							<phase>package</phase>
+							<goals>
+								<goal>directory-inline</goal>
+							</goals>
+						</execution>
+					</executions>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>dependency-maven-plugin</artifactId>
+				<groupId>org.codehaus.mojo</groupId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/lib</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<excludeTransitive>true</excludeTransitive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 	<dependencies>
@@ -80,11 +117,11 @@
 			<artifactId>jl</artifactId>
 			<version>1.0.1</version>
 		</dependency>
-<!--		<dependency>-->
-<!--			<groupId>org.pushingpixels</groupId>-->
-<!--			<artifactId>trident</artifactId>-->
-<!--			<version>1.2dev</version>-->
-<!--		</dependency>-->
+		<!-- <dependency> -->
+		<!-- <groupId>org.pushingpixels</groupId> -->
+		<!-- <artifactId>trident</artifactId> -->
+		<!-- <version>1.2dev</version> -->
+		<!-- </dependency> -->
 		<dependency>
 			<groupId>org.pushingpixels</groupId>
 			<artifactId>trident</artifactId>
@@ -109,6 +146,16 @@
 			<groupId>com.miglayout</groupId>
 			<artifactId>miglayout</artifactId>
 			<version>3.7.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun</groupId>
+			<artifactId>jna</artifactId>
+			<version>3.2.7</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun</groupId>
+			<artifactId>jna-plataform</artifactId>
+			<version>3.2.7</version>
 		</dependency>
 	</dependencies>
 
