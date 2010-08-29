@@ -5,8 +5,11 @@ import java.beans.PropertyChangeListener;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import org.apache.log4j.Logger;
+
 public class DefaultController implements PropertyChangeListener {
 
+	private static final Logger LOGGER = Logger.getLogger(DefaultController.class);
 	private ArrayList<AbstractView> mRegisteredViews;
 	private ArrayList<DefaultModel> mRegisteredModels;
 
@@ -45,7 +48,7 @@ public class DefaultController implements PropertyChangeListener {
 				Method method = model.getClass().getMethod("set" + propertyName, new Class[] { newValue.getClass() });
 				method.invoke(model, newValue);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 		}
 	}
@@ -56,7 +59,7 @@ public class DefaultController implements PropertyChangeListener {
 				Method method = model.getClass().getMethod("call" + propertyName, new Class[] {});
 				method.invoke(model);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 		}
 	}
@@ -67,7 +70,7 @@ public class DefaultController implements PropertyChangeListener {
 				Method method = model.getClass().getMethod("process" + propertyName, new Class[] {});
 				method.invoke(model);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 		}
 	}
@@ -79,7 +82,7 @@ public class DefaultController implements PropertyChangeListener {
 						new Class[] { parameter.getClass() });
 				method.invoke(model, parameter);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 		}
 	}
@@ -90,7 +93,7 @@ public class DefaultController implements PropertyChangeListener {
 				Method method = model.getClass().getMethod("call" + propertyName, new Class[] { parameter.getClass() });
 				method.invoke(model, parameter);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 		}
 	}
@@ -103,7 +106,7 @@ public class DefaultController implements PropertyChangeListener {
 						new Class[] { parameter.getClass(), paramter2.getClass() });
 				method.invoke(model, parameter, paramter2);
 			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 		}
 	}

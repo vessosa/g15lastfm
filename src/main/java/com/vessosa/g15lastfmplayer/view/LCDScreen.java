@@ -5,6 +5,7 @@ import java.awt.FontFormatException;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 
 import javax.imageio.ImageIO;
@@ -12,11 +13,13 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import net.djpowell.lcdjni.AppletCapability;
+import net.djpowell.lcdjni.ConfigCallback;
 import net.djpowell.lcdjni.DeviceType;
 import net.djpowell.lcdjni.LcdConnection;
 import net.djpowell.lcdjni.LcdDevice;
 import net.djpowell.lcdjni.LcdException;
 import net.djpowell.lcdjni.LcdMonoBitmap;
+import net.djpowell.lcdjni.NotificationCallback;
 import net.djpowell.lcdjni.PixelColor;
 import net.djpowell.lcdjni.Priority;
 import net.djpowell.lcdjni.SyncType;
@@ -27,9 +30,9 @@ import com.vessosa.g15lastfmplayer.controller.Controller;
 import com.vessosa.g15lastfmplayer.util.ELCDScreen;
 import com.vessosa.g15lastfmplayer.util.mvc.AbstractView;
 
-public class LCDScreen implements AbstractView {
+public class LCDScreen implements AbstractView, NotificationCallback, ConfigCallback {
 	private static final Logger LOGGER = Logger.getLogger(LCDScreen.class);
-	public static boolean stop;
+	private static boolean stop;
 	private ELCDScreen currentScreen;
 	private int paintDuration = 10;
 	private Controller controller;
@@ -63,8 +66,8 @@ public class LCDScreen implements AbstractView {
 
 	public void init() {
 		try {
-			LcdConnection con = new LcdConnection("G15LastfmPlayer", false,
-					AppletCapability.getCaps(AppletCapability.BW), null, null);
+			LcdConnection con = new LcdConnection("G15LastfmPlayer", true,
+					AppletCapability.getCaps(AppletCapability.BW), this, this);
 
 			LcdDevice device = con.openDevice(DeviceType.BW, new G15KeysImplementationView(controller));
 			LcdMonoBitmap bmp = device.createMonoBitmap(PixelColor.G15_REV_1);
@@ -98,9 +101,25 @@ public class LCDScreen implements AbstractView {
 			con.close();
 			LcdConnection.deInit();
 		} catch (LcdException e) {
-			JOptionPane.showMessageDialog(null,
-					"An error has occurred. Please check if Logitech G15 drivers are installed and try again.",
-					"G15LastfmPlayer", JOptionPane.ERROR_MESSAGE);
+			LOGGER.debug(e);
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+
+					@Override
+					public void run() {
+						JOptionPane
+								.showMessageDialog(
+										null,
+										"An error has occurred. Please check if Logitech G15 drivers are installed and try again.",
+										"G15LastfmPlayer", JOptionPane.ERROR_MESSAGE);
+					}
+
+				});
+			} catch (InterruptedException e1) {
+				LOGGER.debug(e);
+			} catch (InvocationTargetException e1) {
+				LOGGER.debug(e);
+			}
 			System.exit(1);
 		}
 	}
@@ -114,7 +133,7 @@ public class LCDScreen implements AbstractView {
 						.createFont(Font.TRUETYPE_FONT, ClassLoader.getSystemResourceAsStream(fontFileName));
 				smallFont = new Font(tempFont.getName(), tempFont.getStyle(), 8);
 			} catch (FontFormatException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			} catch (IOException e) {
 				LOGGER.debug(e);
 				JOptionPane.showMessageDialog(null, "Can't find 7PX2BUS.TTF font!", "G15LastfmPlayer",
@@ -135,7 +154,7 @@ public class LCDScreen implements AbstractView {
 						.createFont(Font.TRUETYPE_FONT, ClassLoader.getSystemResourceAsStream(fontFileName));
 				bigFont = new Font(tempFont.getName(), tempFont.getStyle(), 14);
 			} catch (FontFormatException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			} catch (IOException e) {
 				LOGGER.debug(e);
 				JOptionPane.showMessageDialog(null, "Can't find 7PX2BUS.TTF font!", "G15LastfmPlayer",
@@ -153,7 +172,7 @@ public class LCDScreen implements AbstractView {
 			try {
 				mainImage = ImageIO.read(getResource("main.bmp"));
 			} catch (IOException e) {
-				e.printStackTrace();
+				LOGGER.debug(e);
 			}
 
 		}
@@ -178,5 +197,40 @@ public class LCDScreen implements AbstractView {
 
 	public Controller getController() {
 		return controller;
+	}
+
+	public static void stopLCD() {
+		stop = true;
+	}
+
+	@Override
+	public void onAppletDisable() {
+		LOGGER.debug("Applet Disable");
+
+	}
+
+	@Override
+	public void onAppletEnable() {
+		LOGGER.debug("Applet Enable");
+	}
+
+	@Override
+	public void onConnectionClosure() {
+		LOGGER.debug("Connection Closure");
+	}
+
+	@Override
+	public void onDeviceArrival(DeviceType deviceType) {
+		LOGGER.debug("Device Arrival");
+	}
+
+	@Override
+	public void onDeviceRemoval(DeviceType deviceType) {
+		LOGGER.debug("Device Removal");
+	}
+
+	@Override
+	public void onConfig() {
+		LOGGER.debug("Config option choose, TODO");
 	}
 }

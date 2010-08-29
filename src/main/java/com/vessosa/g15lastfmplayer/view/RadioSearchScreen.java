@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -26,6 +27,7 @@ import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
 import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.pushingpixels.substance.api.skin.TwilightSkin;
 
+import com.vessosa.g15lastfmplayer.G15LastfmPlayer;
 import com.vessosa.g15lastfmplayer.controller.Controller;
 import com.vessosa.g15lastfmplayer.util.mvc.AbstractView;
 
@@ -35,13 +37,21 @@ public class RadioSearchScreen extends JDialog implements AbstractView {
 	private JButton searchButton;
 	private JTextField radioField;
 	private Controller controller;
+	private List<String> radioHistory;
 
 	public RadioSearchScreen(Controller controller) {
 		this.controller = controller;
-		initGUI();
+		radioHistory = new ArrayList<String>();
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				initGUI();
+			}
+		});
 	}
 
 	private void initGUI() {
+
 		setTitle("G15LastfmPlayer");
 		MigLayout layout = new MigLayout("", "grow");
 		setLayout(new BorderLayout());
@@ -72,16 +82,28 @@ public class RadioSearchScreen extends JDialog implements AbstractView {
 	}
 
 	@Override
-	public void modelPropertyChange(PropertyChangeEvent evt) {
-		String propertyName = evt.getPropertyName();
-		if (propertyName.equals(Controller.SHOW_SEARCH_DIALOG)) {
-			getRadioField().selectAll();
-			setVisible(true);
-		} else if (propertyName.equals(Controller.POPULATE_RADIO_NAMES)) {
-			@SuppressWarnings("unchecked")
-			List<String> radioList = (List<String>) evt.getNewValue();
-			AutoCompleteDecorator.decorate(getRadioField(), radioList, false);
-		}
+	public void modelPropertyChange(final PropertyChangeEvent evt) {
+		final String propertyName = evt.getPropertyName();
+		SwingUtilities.invokeLater(new Runnable() {
+
+			@Override
+			public void run() {
+				if (propertyName.equals(Controller.SHOW_SEARCH_DIALOG)) {
+					getRadioField().selectAll();
+					setVisible(true);
+				} else if (propertyName.equals(Controller.POPULATE_RADIO_NAMES)) {
+					@SuppressWarnings("unchecked")
+					List<String> newRadioList = (List<String>) evt.getNewValue();
+					for (String newRadio : newRadioList) {
+						if (!radioHistory.contains(newRadio))
+							radioHistory.add(newRadio);
+					}
+					AutoCompleteDecorator.decorate(getRadioField(), radioHistory, false);
+				}
+			}
+
+		});
+
 	}
 
 	public static void main(String[] args) {
@@ -108,7 +130,15 @@ public class RadioSearchScreen extends JDialog implements AbstractView {
 				public void actionPerformed(ActionEvent arg0) {
 					if (getRadioField().getText().length() > 0) {
 						try {
-							controller.searchAndPlay(getRadioField().getText());
+							if (getRadioField().getText().toLowerCase().equals("exit"))
+								G15LastfmPlayer.exitApplication();
+							if (getRadioField().getText().toLowerCase().equals("update")) {
+								G15LastfmPlayer.registerMediaKeys();
+								controller.checkUpdate();
+							} else {
+								addToHistory(getRadioField().getText());
+								controller.searchAndPlay(getRadioField().getText());
+							}
 							getRadioField().selectAll();
 							setVisible(false);
 						} catch (Exception e) {
@@ -122,6 +152,13 @@ public class RadioSearchScreen extends JDialog implements AbstractView {
 			});
 		}
 		return searchButton;
+	}
+
+	private void addToHistory(String text) {
+		if (!radioHistory.contains(text)) {
+			radioHistory.add(text);
+			AutoCompleteDecorator.decorate(getRadioField(), radioHistory, false);
+		}
 	}
 
 	public JTextField getRadioField() {

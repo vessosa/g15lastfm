@@ -47,4 +47,8 @@ public class Controller extends DefaultController {
 	public void searchAndPlay(String radio) throws Exception {
 		processModelAction("SearchAndPlay", radio);
 	}
+
+	public void checkUpdate() throws Exception {
+		callModelAction("Update");
+	}
 }

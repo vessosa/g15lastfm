@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import com.melloware.jintellitype.IntellitypeListener;
 import com.melloware.jintellitype.JIntellitype;
 import com.vessosa.g15lastfmplayer.controller.Controller;
+import com.vessosa.g15lastfmplayer.util.Config;
 import com.vessosa.g15lastfmplayer.util.mvc.AbstractView;
 
 public class G15KeysImplementationView implements IntellitypeListener, KeyCallback, AbstractView {
@@ -67,7 +68,7 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 
 	@Override
 	public void onKeyUp(int button) {
-		System.out.println("Button pressed: " + button);
+		LOGGER.debug("Button pressed: " + button);
 		switch (button) {
 		case G15_KEY_1:
 			button1Action();
@@ -90,7 +91,7 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 		try {
 			controller.softButton1();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.debug(e);
 		}
 	}
 
@@ -99,7 +100,7 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Search");
 			controller.search();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.debug(e);
 		}
 
 	}
@@ -109,8 +110,12 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Loving..");
 			controller.love();
 		} catch (Exception e) {
+			LOGGER.debug(e);
 			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
 					JOptionPane.ERROR_MESSAGE);
+			if (e.getCause().getMessage().contains("wrong password")) {
+				Config.askLoginInformation();
+			}
 		}
 	}
 
@@ -119,8 +124,12 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Banning..");
 			controller.ban();
 		} catch (Exception e) {
+			LOGGER.debug(e);
 			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
 					JOptionPane.ERROR_MESSAGE);
+			if (e.getCause().getMessage().contains("wrong password")) {
+				Config.askLoginInformation();
+			}
 		}
 	}
 
@@ -129,8 +138,12 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("skip to next track..");
 			controller.skip();
 		} catch (Exception e) {
+			LOGGER.debug(e);
 			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
 					JOptionPane.ERROR_MESSAGE);
+			if (e.getCause().getMessage().contains("wrong password")) {
+				Config.askLoginInformation();
+			}
 		}
 	}
 
@@ -139,8 +152,13 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Playing..");
 			controller.play();
 		} catch (Exception e) {
+			LOGGER.debug(e);
 			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
 					JOptionPane.ERROR_MESSAGE);
+			if (e.getCause().getMessage() != null)
+				if (e.getCause().getMessage().contains("wrong password")) {
+					Config.askLoginInformation();
+				}
 		}
 	}
 
@@ -149,7 +167,12 @@ public class G15KeysImplementationView implements IntellitypeListener, KeyCallba
 			LOGGER.debug("Stopping..");
 			controller.stop();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOGGER.debug(e);
+			JOptionPane.showMessageDialog(null, e.getCause().getMessage(), "G15Lastfm Player",
+					JOptionPane.ERROR_MESSAGE);
+			if (e.getCause().getMessage().contains("wrong password")) {
+				Config.askLoginInformation();
+			}
 		}
 	}
 
