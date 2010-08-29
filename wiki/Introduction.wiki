@@ -9,10 +9,11 @@ G15Lastfm is a radio player for Last.fm with support to G15 gaming keyboard.
 = Supported features =
 
 Currently G15Lastfm still in development, but the first version will support:
-  * Streaming and playing last.fm radio for subscribers
-  * Support for G15 keyboard, including media keys
-  * Setting Love and Ban easily using G15 soft keys
-  * LCD support displaying track artist, name etc.
+  * Stream music from Last.fm
+  * Send music information to MSN ("what I'm listening")
+  * BAN or LOVE your favorite tracks
+  * Search a radio and tune it
+  * Check for updates (configurable)
 
 = Contacting author for suggestions =
 
