@@ -28,17 +28,15 @@ If you want to add me on MSN, jack_stuard [at] hotmail [dot] com
 
 = Third-Party libraries used =
 G15Lastfm uses the following libraries: 
-JLayer 	                                http://www.javazoom.net/javalayer/javalayer.html
- 
-Last.fm Binding API by Janni Kovacs 	http://www.u-mass.de/lastfm 
 
-JIntellitype 	                        http://melloware.com/products/jintellitype/
-index.html 
-JNA 	                                https://jna.dev.java.net/ 
 
-JSmooth 	                        http://jsmooth.sourceforge.net/ 
-
-Substance 	                        http://www.pushing-pixels.org/ 
+|| LCDJNI || http://github.com/djpowell/lcdjni ||
+|| JLayer || http://www.javazoom.net/javalayer/javalayer.html ||
+|| Last.fm Binding API by Janni Kovacs || http://www.u-mass.de/lastfm ||
+|| JIntellitype || http://melloware.com/products/jintellitype/index.html ||
+|| JNA || https://jna.dev.java.net/ ||
+|| JSmooth || http://jsmooth.sourceforge.net/ ||
+|| Substance || http://www.pushing-pixels.org/ ||
 
 
 
